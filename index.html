@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tyler | Ecom video editor</title>
+<meta name="description" content="Video ads for ecom brands: UGC, AI animation and VSLs. Watch the work and read why each edit works.">
+<meta name="theme-color" content="#0d0e11">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/light/style.css">
+<script>document.documentElement.classList.add('js')</script>
+<style>
+:root{
+  --ink:#0d0e11;
+  --ink-raised:#15171b;
+  --ivory:#f3efe8;
+  --tungsten:#e6c9a2;
+  --tungsten-deep:#b9966a;
+  --steel:#8ea0b3;
+
+  --text:rgba(243,239,232,.62);
+  --text-faint:rgba(243,239,232,.4);
+  --line:rgba(243,239,232,.09);
+  --glass:rgba(243,239,232,.04);
+  --glass-strong:rgba(243,239,232,.07);
+
+  --radius-lg:28px;
+  --radius:18px;
+  --radius-sm:12px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --wrap:1180px;
+  --nav-h:72px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+[id]{scroll-margin-top:calc(var(--nav-h) + 24px)}
+
+body{
+  background:var(--ink);
+  color:var(--text);
+  font-family:"Inter",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  font-weight:300;
+  font-size:17px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+body.locked{overflow:hidden}
+
+/* Ambient light: two soft sources so the glass has something to blur. */
+.ambient{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.ambient::before,.ambient::after{content:"";position:absolute;border-radius:50%;filter:blur(90px)}
+.ambient::before{
+  width:62vw;height:62vw;left:-18vw;top:-26vw;
+  background:radial-gradient(circle,rgba(230,201,162,.20),rgba(230,201,162,0) 65%);
+}
+.ambient::after{
+  width:56vw;height:56vw;right:-20vw;top:38vh;
+  background:radial-gradient(circle,rgba(142,160,179,.16),rgba(142,160,179,0) 65%);
+}
+.grain{
+  position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+h1,h2,h3,h4{color:var(--ivory);font-weight:300;letter-spacing:-.04em;line-height:1.06}
+h1{font-size:clamp(42px,5.5vw,76px);letter-spacing:-.05em;text-wrap:balance}
+h2,h3{text-wrap:balance}
+h2{font-size:clamp(34px,4.4vw,58px)}
+h3{font-size:clamp(22px,2.2vw,28px);letter-spacing:-.035em;line-height:1.2}
+h4{font-size:17px;letter-spacing:-.02em;line-height:1.3}
+p{max-width:62ch}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+img,video{display:block;max-width:100%}
+i[class^="ph"]{font-size:1.15em;line-height:1;flex-shrink:0}
+
+:focus-visible{outline:1px solid var(--tungsten);outline-offset:4px;border-radius:6px}
+
+.wrap{width:min(var(--wrap),100% - 48px);margin-inline:auto}
+section{padding-block:clamp(84px,11vw,150px)}
+.section-head{margin-bottom:clamp(40px,5vw,64px)}
+.section-head p{margin-top:18px;font-size:18px}
+
+/* ---------- Glass ---------- */
+.glass{
+  background:linear-gradient(160deg,var(--glass-strong),var(--glass));
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  -webkit-backdrop-filter:blur(22px) saturate(130%);
+  backdrop-filter:blur(22px) saturate(130%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 24px 60px -30px rgba(0,0,0,.7);
+}
+
+/* ---------- Neumorphic buttons ---------- */
+.btn{
+  position:relative;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-height:52px;padding:0 26px;
+  border-radius:16px;
+  font-size:15.5px;letter-spacing:-.01em;white-space:nowrap;
+  color:var(--ivory);
+  background:linear-gradient(145deg,#24262c,#131519);
+  border:1px solid rgba(255,255,255,.05);
+  box-shadow:
+    7px 7px 18px rgba(0,0,0,.6),
+    -5px -5px 14px rgba(255,255,255,.035),
+    inset 0 1px 0 rgba(255,255,255,.09),
+    inset 0 -2px 3px rgba(0,0,0,.45);
+  transition:box-shadow .45s var(--ease),transform .25s var(--ease),border-color .45s var(--ease),color .3s;
+}
+.btn:hover{
+  border-color:rgba(230,201,162,.35);
+  box-shadow:
+    7px 7px 18px rgba(0,0,0,.6),
+    -5px -5px 14px rgba(255,255,255,.035),
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -2px 3px rgba(0,0,0,.45),
+    0 0 34px rgba(230,201,162,.28),
+    0 0 4px rgba(230,201,162,.35);
+}
+.btn:active{
+  transform:translateY(1px);
+  box-shadow:
+    inset 5px 5px 12px rgba(0,0,0,.6),
+    inset -3px -3px 9px rgba(255,255,255,.04),
+    0 0 22px rgba(230,201,162,.18);
+}
+.btn-primary{
+  color:#1b1610;
+  background:linear-gradient(145deg,#f1dcbc,#c9a777);
+  border-color:rgba(255,255,255,.25);
+  box-shadow:
+    7px 7px 18px rgba(0,0,0,.6),
+    -5px -5px 14px rgba(255,255,255,.04),
+    inset 0 1px 0 rgba(255,255,255,.55),
+    inset 0 -3px 5px rgba(120,86,40,.45);
+}
+.btn-primary:hover{
+  border-color:rgba(255,255,255,.4);
+  box-shadow:
+    7px 7px 18px rgba(0,0,0,.6),
+    -5px -5px 14px rgba(255,255,255,.04),
+    inset 0 1px 0 rgba(255,255,255,.6),
+    inset 0 -3px 5px rgba(120,86,40,.45),
+    0 0 44px rgba(230,201,162,.5),
+    0 0 8px rgba(230,201,162,.5);
+}
+.btn-primary:active{
+  box-shadow:
+    inset 5px 5px 12px rgba(120,86,40,.6),
+    inset -3px -3px 9px rgba(255,255,255,.35),
+    0 0 26px rgba(230,201,162,.3);
+}
+.btn-sm{min-height:44px;padding:0 20px;border-radius:14px;font-size:14.5px}
+
+/* ---------- Nav ---------- */
+.nav{
+  position:fixed;inset:0 0 auto 0;z-index:50;height:var(--nav-h);
+  transition:background .5s var(--ease),border-color .5s var(--ease),backdrop-filter .5s;
+  border-bottom:1px solid transparent;
+}
+.nav.scrolled{
+  background:rgba(13,14,17,.62);
+  -webkit-backdrop-filter:blur(20px) saturate(140%);
+  backdrop-filter:blur(20px) saturate(140%);
+  border-bottom-color:var(--line);
+}
+.menu-open .nav{z-index:65;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-bottom-color:transparent}
+.menu-open .playhead{opacity:0}
+.nav-inner{height:100%;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:baseline;gap:12px;color:var(--ivory);font-size:21px;letter-spacing:-.04em}
+.brand small{font-size:13.5px;letter-spacing:0;color:var(--text-faint)}
+.brand img{width:36px;height:36px;border-radius:50%;object-fit:cover;align-self:center;border:1px solid rgba(255,255,255,.16);box-shadow:0 6px 16px rgba(0,0,0,.5)}
+.nav-links{display:flex;align-items:center;gap:34px;list-style:none;font-size:15px}
+.nav-links a{transition:color .3s}
+.nav-links a:hover{color:var(--ivory)}
+.nav-right{display:flex;align-items:center;gap:14px}
+
+/* Playhead: scroll position shown as a timeline under the nav. */
+.playhead{position:absolute;left:0;right:0;bottom:-1px;height:1px;pointer-events:none}
+.playhead span{
+  display:block;height:100%;width:100%;transform-origin:0 50%;transform:scaleX(0);
+  background:linear-gradient(90deg,rgba(230,201,162,0),var(--tungsten));
+}
+
+.burger{
+  display:none;width:48px;height:48px;border-radius:14px;
+  align-items:center;justify-content:center;position:relative;z-index:70;
+  background:linear-gradient(145deg,#24262c,#131519);
+  border:1px solid rgba(255,255,255,.05);
+  box-shadow:5px 5px 14px rgba(0,0,0,.55),-4px -4px 10px rgba(255,255,255,.03),inset 0 1px 0 rgba(255,255,255,.08);
+  transition:box-shadow .45s var(--ease),border-color .45s;
+}
+.burger:hover{border-color:rgba(230,201,162,.35);box-shadow:5px 5px 14px rgba(0,0,0,.55),-4px -4px 10px rgba(255,255,255,.03),inset 0 1px 0 rgba(255,255,255,.1),0 0 26px rgba(230,201,162,.25)}
+.burger span{position:absolute;width:18px;height:1px;background:var(--ivory);transition:transform .5s var(--ease),opacity .3s}
+.burger span:nth-child(1){transform:translateY(-5px)}
+.burger span:nth-child(2){transform:translateY(5px)}
+.menu-open .burger span:nth-child(1){transform:rotate(45deg)}
+.menu-open .burger span:nth-child(2){transform:rotate(-45deg)}
+
+/* ---------- Tray (tablet and down) ---------- */
+.scrim{
+  position:fixed;inset:0;z-index:55;background:rgba(6,7,9,.55);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  opacity:0;visibility:hidden;transition:opacity .5s var(--ease),visibility 0s linear .5s;
+}
+.menu-open .scrim{opacity:1;visibility:visible;transition:opacity .5s var(--ease)}
+.tray{
+  position:fixed;top:0;right:0;z-index:60;
+  width:min(400px,88vw);height:100vh;height:100dvh;
+  padding:calc(var(--nav-h) + 28px) 30px 34px;
+  display:flex;flex-direction:column;
+  background:linear-gradient(170deg,rgba(30,32,38,.82),rgba(14,15,18,.9));
+  -webkit-backdrop-filter:blur(30px) saturate(140%);backdrop-filter:blur(30px) saturate(140%);
+  border-left:1px solid var(--line);
+  box-shadow:-40px 0 80px rgba(0,0,0,.5);
+  transform:translateX(104%);visibility:hidden;
+  transition:transform .65s var(--ease),visibility 0s linear .65s;
+}
+.menu-open .tray{transform:none;visibility:visible;transition:transform .65s var(--ease)}
+.tray ul{list-style:none;display:flex;flex-direction:column}
+.tray li{border-bottom:1px solid var(--line)}
+.tray li a{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 2px;color:var(--ivory);font-size:28px;letter-spacing:-.04em;
+  opacity:0;transform:translateX(26px);
+  transition:opacity .4s var(--ease),transform .5s var(--ease);
+}
+.tray li a i{color:var(--text-faint);font-size:20px}
+.menu-open .tray li a{opacity:1;transform:none;transition-delay:calc(.16s + var(--i) * .06s)}
+.tray-foot{margin-top:auto;display:flex;flex-direction:column;gap:18px}
+.tray-foot .btn{width:100%}
+.tray-foot p{font-size:14px;color:var(--text-faint)}
+
+/* ---------- Hero ---------- */
+.hero{padding-top:calc(var(--nav-h) + clamp(48px,7vw,96px));padding-bottom:clamp(64px,8vw,110px)}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);gap:clamp(32px,4vw,64px);align-items:center}
+.hero h1{max-width:13ch}
+.hero-sub{margin-top:28px;font-size:clamp(18px,1.5vw,20.5px);max-width:44ch}
+.hero-actions{margin-top:38px;display:flex;flex-wrap:wrap;gap:16px}
+.contact-row{margin-top:34px;display:flex;flex-wrap:wrap;gap:10px}
+.pill{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:9px 15px 9px 13px;border-radius:999px;font-size:14px;
+  background:var(--glass);border:1px solid var(--line);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  transition:border-color .35s,color .35s,background .35s;
+}
+.pill i{color:var(--tungsten);font-size:17px}
+.pill:hover{color:var(--ivory);border-color:rgba(230,201,162,.35);background:var(--glass-strong)}
+
+/* Three frames of real work, playing. */
+.reel{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,1.4vw,18px);align-items:center}
+.frame{
+  position:relative;aspect-ratio:9/16;border-radius:clamp(16px,2vw,26px);overflow:hidden;
+  background:var(--ink-raised);
+  border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 40px 80px -30px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.frame video,.frame img{width:100%;height:100%;object-fit:cover}
+.frame:nth-child(1){transform:translateY(7%)}
+.frame:nth-child(2){transform:translateY(-5%)}
+.frame:nth-child(3){transform:translateY(11%)}
+.frame figcaption{
+  position:absolute;left:10px;bottom:10px;
+  padding:5px 11px;border-radius:999px;font-size:12px;color:var(--ivory);
+  background:rgba(13,14,17,.5);border:1px solid rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+}
+.brands{margin-top:clamp(64px,8vw,104px);padding-top:26px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 34px;align-items:baseline;font-size:15px}
+.brands span:first-child{color:var(--text-faint)}
+.brands b{font-weight:300;color:var(--ivory);opacity:.78;letter-spacing:-.02em;font-size:17px}
+
+/* ---------- About ---------- */
+#about{padding-top:0}
+.about{
+  display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:clamp(24px,4vw,56px);
+  padding:clamp(18px,2.6vw,34px);border-radius:var(--radius-lg);align-items:center;
+}
+.about-photo{aspect-ratio:4/5;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:var(--ink-raised)}
+.about-photo img{width:100%;height:100%;object-fit:cover}
+.about-body h2{font-size:clamp(30px,3.4vw,44px)}
+.about-body p{margin-top:16px;font-size:18px;max-width:52ch}
+.about-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:28px}
+.about-stats div{padding:16px 18px;border-radius:var(--radius-sm);border:1px solid var(--line);background:rgba(243,239,232,.03)}
+.about-stats strong{display:block;font-weight:300;color:var(--ivory);font-size:26px;letter-spacing:-.04em;line-height:1.15}
+.about-stats span{display:block;margin-top:4px;font-size:14px;line-height:1.4}
+
+/* ---------- Work ---------- */
+.group{margin-top:clamp(44px,5vw,68px)}
+.group:first-of-type{margin-top:0}
+.group-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.group-head p{font-size:15px;color:var(--text-faint);text-align:right}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.6vw,22px)}
+.card{
+  display:flex;flex-direction:column;text-align:left;padding:10px;border-radius:22px;
+  transition:border-color .5s var(--ease),transform .6s var(--ease),box-shadow .6s var(--ease);
+}
+.card:hover{border-color:rgba(230,201,162,.28);transform:translateY(-4px)}
+.thumb{position:relative;aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:var(--ink-raised)}
+.thumb img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s var(--ease),opacity .5s}
+.card:hover .thumb img,.case-media:hover .thumb img{transform:scale(1.04)}
+.thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,14,17,0) 55%,rgba(13,14,17,.7));pointer-events:none}
+.play{
+  position:absolute;left:12px;bottom:12px;z-index:2;
+  width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  color:var(--ivory);font-size:18px;
+  background:rgba(243,239,232,.12);border:1px solid rgba(255,255,255,.22);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  transition:background .4s,box-shadow .5s var(--ease),transform .5s var(--ease);
+}
+.card:hover .play,.case-media:hover .play{background:rgba(230,201,162,.24);box-shadow:0 0 30px rgba(230,201,162,.35);transform:scale(1.06)}
+.time{
+  position:absolute;right:12px;bottom:12px;z-index:2;
+  font-size:12.5px;color:var(--ivory);font-variant-numeric:tabular-nums;
+  padding:4px 10px;border-radius:999px;background:rgba(13,14,17,.5);border:1px solid rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+}
+.card-text{padding:16px 8px 10px}
+.card-text p{font-size:14.5px;line-height:1.45;margin-top:5px}
+
+/* ---------- Case studies ---------- */
+.cases{display:flex;flex-direction:column;gap:clamp(22px,3vw,34px)}
+.case{
+  display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:clamp(24px,4vw,56px);
+  padding:clamp(18px,2.6vw,34px);border-radius:var(--radius-lg);align-items:start;
+}
+.case-media{display:block;width:100%;text-align:left}
+.case-media .thumb{border-radius:18px;border:1px solid rgba(255,255,255,.08)}
+.case-body{padding-block:clamp(4px,1vw,14px)}
+.case-kind{font-size:14.5px;color:var(--tungsten);opacity:.9}
+.case-body h3{margin-top:10px;font-size:clamp(26px,2.8vw,38px);letter-spacing:-.045em;line-height:1.1;max-width:20ch}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.facts span{font-size:13.5px;padding:6px 13px;border-radius:999px;border:1px solid var(--line);background:rgba(243,239,232,.03);font-variant-numeric:tabular-nums}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:22px}
+.results div{padding:16px 18px;border-radius:var(--radius-sm);border:1px solid rgba(230,201,162,.22);background:rgba(230,201,162,.05)}
+.results strong{display:block;font-weight:300;color:var(--ivory);font-size:28px;letter-spacing:-.04em;line-height:1.1}
+.results span{font-size:13.5px}
+.proof{margin-top:14px;border-radius:var(--radius-sm);border:1px solid var(--line);width:100%}
+.case-body h4{margin-top:30px}
+.why{margin-top:10px;display:flex;flex-direction:column;gap:14px}
+.why p{font-size:16.5px}
+.brief{margin-top:10px;font-size:16.5px}
+.brief a{color:var(--tungsten);border-bottom:1px solid rgba(230,201,162,.35);transition:border-color .3s}
+.brief a:hover{border-bottom-color:var(--tungsten)}
+.notes{margin-top:22px;display:flex;flex-direction:column;gap:22px}
+.notes h5{color:var(--ivory);font-weight:300;font-size:16.5px;letter-spacing:-.02em;line-height:1.3}
+.notes p{margin-top:6px;font-size:16.5px}
+.notes p + p{margin-top:12px}
+@media (min-width:701px){.case-media{position:sticky;top:calc(var(--nav-h) + 20px)}}
+.case-links{margin-top:26px;display:flex;flex-wrap:wrap;gap:12px}
+
+/* ---------- Formats ---------- */
+.formats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.6vw,22px)}
+.format{padding:28px 26px 30px}
+.format i{font-size:30px;color:var(--tungsten)}
+.format h3{margin-top:22px;font-size:21px}
+.format p{margin-top:10px;font-size:15.5px;line-height:1.55}
+
+/* ---------- Contact ---------- */
+.contact-panel{padding:clamp(34px,6vw,84px);border-radius:var(--radius-lg);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.9fr);gap:clamp(30px,5vw,72px);align-items:center}
+.contact-panel p{margin-top:20px;font-size:18px}
+.channels{display:flex;flex-direction:column;gap:10px}
+.channel{
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;
+  padding:16px 18px;border-radius:var(--radius);
+  border:1px solid var(--line);background:rgba(243,239,232,.03);
+  transition:border-color .4s,background .4s;
+}
+.channel:hover{border-color:rgba(230,201,162,.3);background:rgba(243,239,232,.055)}
+.channel > i{font-size:24px;color:var(--tungsten)}
+.channel .ch{display:flex;flex-direction:column;min-width:0}
+.channel .ch span:first-child{font-size:13.5px;color:var(--text-faint);line-height:1.3}
+.channel .ch span:last-child{color:var(--ivory);opacity:.9;font-size:17px;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.copy{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:18px;border:1px solid var(--line);transition:color .3s,border-color .3s,box-shadow .4s}
+.copy:hover{color:var(--ivory);border-color:rgba(230,201,162,.35);box-shadow:0 0 22px rgba(230,201,162,.2)}
+.copy.done{color:var(--tungsten)}
+
+footer{padding:34px 0 46px;border-top:1px solid var(--line);font-size:14.5px}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;color:var(--text-faint)}
+footer a:hover{color:var(--ivory)}
+
+/* ---------- Player ---------- */
+dialog{
+  margin:auto;border:0;background:none;color:inherit;
+  max-width:100vw;max-height:100dvh;overflow:visible;
+}
+dialog::backdrop{background:rgba(6,7,9,.78);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.player{position:relative;padding:12px;border-radius:26px;width:min(420px,calc(100vw - 32px),calc((100dvh - 150px) * .5625 + 24px))}
+.player video{width:100%;aspect-ratio:9/16;border-radius:16px;background:#000}
+.player-meta{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 8px 4px}
+.player-meta p{font-size:14px;line-height:1.35}
+.player-close{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:18px;border:1px solid var(--line);flex-shrink:0;transition:color .3s,border-color .3s}
+.player-close:hover{color:var(--ivory);border-color:rgba(230,201,162,.35)}
+dialog[open] .player{animation:rise .55s var(--ease) both}
+dialog[open]::backdrop{animation:fade .4s ease both}
+
+/* ---------- Motion ---------- */
+@keyframes rise{from{opacity:0;transform:translateY(26px);filter:blur(10px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* Page load: content comes up from nothing, in order. */
+.js .load{opacity:0;animation:rise 1s var(--ease) both;animation-delay:calc(.12s + var(--i,0) * .11s)}
+.js .reel .frame{opacity:0;animation:frame-in 1.3s var(--ease) both;animation-delay:calc(.5s + var(--i,0) * .14s)}
+@keyframes frame-in{from{opacity:0;filter:blur(14px);translate:0 46px}to{opacity:1;filter:blur(0);translate:0 0}}
+
+/* Scroll: sections and components resolve out of blur. */
+.js .reveal{opacity:0;filter:blur(12px);transform:translateY(30px);transition:opacity 1s var(--ease),filter 1s var(--ease),transform 1s var(--ease);transition-delay:calc(var(--d,0) * 80ms);will-change:opacity,filter,transform}
+.js .reveal.in{opacity:1;filter:blur(0);transform:none}
+.js .card.reveal.in:hover{transform:translateY(-4px);transition-delay:0s}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .js .load,.js .reel .frame{animation:none;opacity:1}
+  .js .reveal{opacity:1;filter:none;transform:none;transition:none}
+  dialog[open] .player,dialog[open]::backdrop{animation:none}
+  .tray,.tray li a,.scrim{transition-duration:.01s}
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1024px){
+  .nav-links,.nav-right .btn{display:none}
+  .burger{display:inline-flex}
+  .hero-grid{grid-template-columns:1fr}
+  .hero h1{max-width:15ch}
+  .reel{max-width:620px;margin:10px auto 30px}
+  .cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .formats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .case{grid-template-columns:minmax(0,240px) minmax(0,1fr)}
+  .about{grid-template-columns:minmax(0,200px) minmax(0,1fr)}
+  .contact-panel{grid-template-columns:1fr}
+}
+@media (max-width:700px){
+  body{font-size:16.5px}
+  .wrap{width:calc(100% - 32px)}
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .card{padding:7px;border-radius:18px}
+  .card-text{padding:12px 6px 8px}
+  .play{width:38px;height:38px;left:9px;bottom:9px;font-size:15px}
+  .time{right:9px;bottom:9px}
+  .group-head{flex-direction:column;gap:4px}
+  .group-head p{text-align:left}
+  .case{grid-template-columns:1fr}
+  .case-media{max-width:260px}
+  .about{grid-template-columns:1fr}
+  .about-photo{max-width:200px}
+  .about-stats{grid-template-columns:1fr 1fr}
+  .about-stats div:last-child{grid-column:1 / -1}
+  .formats{grid-template-columns:1fr}
+  .hero-actions .btn{flex:1 1 auto}
+  .brand small{display:none}
+}
+</style>
+</head>
+<body>
+<div class="ambient" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top"><img data-photo alt="" width="36" height="36"><span data-name>Tyler</span><small data-role>Ecom video editor</small></a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#work">Work</a></li>
+      <li><a href="#case-studies">Case studies</a></li>
+      <li><a href="#formats">What I edit</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <a class="btn btn-sm" href="#contact"><i class="ph-light ph-paper-plane-tilt"></i>Contact me</a>
+      <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="tray"><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="playhead" aria-hidden="true"><span id="playhead"></span></div>
+</header>
+
+<div class="scrim" id="scrim"></div>
+<aside class="tray" id="tray" aria-label="Menu" inert>
+  <ul>
+    <li><a href="#about" style="--i:0">About<i class="ph-light ph-arrow-up-right"></i></a></li>
+    <li><a href="#work" style="--i:1">Work<i class="ph-light ph-arrow-up-right"></i></a></li>
+    <li><a href="#case-studies" style="--i:2">Case studies<i class="ph-light ph-arrow-up-right"></i></a></li>
+    <li><a href="#formats" style="--i:3">What I edit<i class="ph-light ph-arrow-up-right"></i></a></li>
+    <li><a href="#contact" style="--i:4">Contact<i class="ph-light ph-arrow-up-right"></i></a></li>
+  </ul>
+  <div class="tray-foot">
+    <a class="btn btn-primary" href="#contact"><i class="ph-light ph-paper-plane-tilt"></i>Contact me</a>
+    <p data-tray-note></p>
+  </div>
+</aside>
+
+<main id="top">
+
+  <!-- Intro: who, what, how to reach me, and the work already playing. -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <h1 class="load" style="--i:0">Ecom ads edited to be watched to the end.</h1>
+          <p class="hero-sub load" style="--i:1" data-intro></p>
+          <div class="hero-actions load" style="--i:2">
+            <a class="btn btn-primary" href="#work"><i class="ph-light ph-play"></i>Watch the work</a>
+            <a class="btn" href="#contact"><i class="ph-light ph-paper-plane-tilt"></i>Contact me</a>
+          </div>
+          <div class="contact-row load" style="--i:3" id="hero-contacts"></div>
+        </div>
+        <div class="reel" id="reel" aria-label="Clips from three recent edits"></div>
+      </div>
+      <div class="brands load" style="--i:5" id="brands"></div>
+    </div>
+  </section>
+
+  <!-- About: short, and only what a brand needs to know. -->
+  <section id="about">
+    <div class="wrap">
+      <div class="about glass reveal">
+        <div class="about-photo"><img data-portrait alt="Tyler Western" loading="lazy" decoding="async" width="720" height="900"></div>
+        <div class="about-body">
+          <h2>About me</h2>
+          <p data-about></p>
+          <div class="about-stats" id="about-stats"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Portfolio, sorted by ad type. -->
+  <section id="work">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2>The work</h2>
+        <p>Sorted by type, ads first. Open any piece to watch it in full, with sound.</p>
+      </div>
+      <div id="groups"></div>
+    </div>
+  </section>
+
+  <!-- Case studies. -->
+  <section id="case-studies">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2>Five edits, and the thinking behind each</h2>
+        <p>The cut is the easy part to see. Here is the thinking behind it, so you can judge whether it will carry over to your brand.</p>
+      </div>
+      <div class="cases" id="cases"></div>
+    </div>
+  </section>
+
+  <section id="formats">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2>What I edit</h2>
+      </div>
+      <div class="formats" id="format-list"></div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap">
+      <div class="contact-panel glass reveal">
+        <div>
+          <h2>Send me the footage or the script.</h2>
+          <p>Tell me the brand, the format you need and your deadline. Use whichever channel suits you; I check all of them.</p>
+        </div>
+        <div class="channels" id="channels"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>&copy; <span id="year"></span> <span data-name>Tyler</span></span>
+    <a href="#top">Back to top</a>
+  </div>
+</footer>
+
+<dialog id="player" aria-label="Video player">
+  <div class="player glass">
+    <video id="player-video" controls playsinline preload="none"></video>
+    <div class="player-meta">
+      <div><h4 id="player-title"></h4><p id="player-sub"></p></div>
+      <button class="player-close" id="player-close" aria-label="Close video"><i class="ph-light ph-x"></i></button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+/* =====================================================================
+   EDIT HERE. Everything on the page is built from these four blocks.
+   ===================================================================== */
+
+const PROFILE = {
+  name: "Tyler Western",
+  role: "Ecom video editor",
+  photo: "img/tyler-avatar.jpg",       // small round photo in the nav
+  portrait: "img/tyler-portrait.jpg",  // larger photo in About
+  intro: "I'm Tyler. I edit video ads for ecom brands: UGC, AI animation and VSLs. Cut by hand, with AI used where it makes the work faster or makes a shot possible.",
+  about: "I switched from info to ecom, and I've spent the last four months inside Ecomuniversity shipping bounties.",
+  stats: [
+    { value: "3 years",     label: "editing short-form" },
+    { value: "600+",        label: "reels edited" },
+    { value: "Lead editor", label: "for @wiseelliot and @keithhanenian" }
+  ],
+  // A contact with no href (Discord) copies its value when clicked instead of opening a link.
+  contacts: [
+    { label: "Email",    icon: "envelope-simple", value: "westerntyler78@gmail.com", href: "mailto:westerntyler78@gmail.com" },
+    { label: "WhatsApp", icon: "whatsapp-logo",   value: "+44 7305 233517",          href: "https://wa.me/447305233517" },
+    { label: "Telegram", icon: "telegram-logo",   value: "@Tylerwestern",            href: "https://t.me/Tylerwestern" },
+    { label: "Discord",  icon: "discord-logo",    value: "tylerwestern" },
+    { label: "X DM",     icon: "x-logo",          value: "@Tysk1i",                  href: "https://x.com/Tysk1i" }
+  ]
+};
+
+// One line per video. `id` matches videos/<id>.mp4 and posters/<id>.jpg.
+const VIDEOS = {
+  "laifen-ugc":     { brand: "Laifen",          format: "UGC ad",                          time: "0:43" },
+  "dfc-stop":       { brand: "Dog Friendly Co", format: "UGC ad, hook test",               time: "0:32" },
+  "dfc-mistakes":   { brand: "Dog Friendly Co", format: "UGC ad",                          time: "0:50" },
+  "carepod":        { brand: "Carepod",         format: "UGC testimonial",                 time: "0:49" },
+  "scrub-daddy":    { brand: "Scrub Daddy",     format: "AI claymation",                   time: "0:31" },
+  "keeps-clay":     { brand: "Keeps",           format: "AI claymation, captions and sound", time: "1:01" },
+  "keeps-drama":    { brand: "Keeps Chew+",     format: "AI drama ad",                     time: "2:12" },
+  "keeps-hologram": { brand: "Keeps",           format: "AI voiceover ad",                 time: "1:00" },
+  "warroad":        { brand: "Warroad",         format: "VSL, TILO Base Layer",            time: "2:43" },
+  "built-different":{ brand: "Built Different", format: "Founder-led ad",                  time: "2:16" },
+  "coffee":         { brand: "STTOKE",          format: "VSL, documentary style",          time: "1:07" },
+  "nurojit":        { brand: "Nurojit",         format: "Voiceover ad",                    time: "0:48" },
+  "laifen-organic": { brand: "Laifen",          format: "Organic-style ad",                time: "0:34" },
+  "peekaboo":       { brand: "Peekaboo Pillow", format: "Organic-style ad",                time: "0:20" },
+  // Personal branding reels. `brand` is the reel's topic here; `personal: true` keeps it out of the brand strip.
+  "pb-1812":        { brand: "Dressing well makes you more money", format: "@wiseelliot, talking head with b-roll and kinetic captions", time: "0:22", personal: true },
+  "pb-ai":          { brand: "Replacing humans with AI",           format: "@wiseelliot, talking head with AI b-roll",               time: "0:35", personal: true },
+  "pb-beware":      { brand: "Train without the ego",              format: "@keithhanenian, talking head with archive b-roll",          time: "0:43", personal: true },
+  "pb-1912":        { brand: "Focus on yourself first",            format: "@wiseelliot, talking head with b-roll",                  time: "0:33", personal: true }
+};
+
+const GROUPS = [
+  { title: "UGC ads",               note: "Creator footage, cut to the script",       ids: ["laifen-ugc", "dfc-stop", "dfc-mistakes", "carepod"] },
+  { title: "AI and animation",      note: "Generated visuals, built shot by shot",    ids: ["scrub-daddy", "keeps-clay", "keeps-drama", "keeps-hologram"] },
+  { title: "VSLs and voiceover",    note: "Longer scripts that have to hold attention", ids: ["coffee", "warroad", "built-different", "nurojit"] },
+  { title: "Organic-style",         note: "Ads that look like a post, not an ad",     ids: ["laifen-organic", "peekaboo"] },
+  { title: "Personal branding",     note: "Short-form for @wiseelliot and @keithhanenian", ids: ["pb-1812", "pb-ai", "pb-beware", "pb-1912"] }
+];
+
+const HERO_REEL = [
+  { id: "laifen-ugc",  label: "UGC" },
+  { id: "scrub-daddy", label: "AI animation" },
+  { id: "warroad",     label: "VSL" }
+];
+
+/* Case studies, strongest first.
+   results: add your numbers and they appear above "Why it works", e.g.
+     results: [{ value: "$50K", label: "Spend" }, { value: "2.85x", label: "ROAS" }, { value: "2.4%", label: "CTR" }]
+   proof:   path to a dashboard or ad account screenshot, e.g. "proof/dfc.png"
+   loom:    link to a Loom breakdown
+   Leave any of them empty and that part stays hidden.
+   A case with `notes` shows them under "Editor's breakdown" (your own words, one block per heading);
+   a case with `why` shows those paragraphs under "Why it works".
+   brief: one line on where the job came from. inspiration: link to the ad the concept came from. */
+const CASES = [
+  {
+    id: "coffee",
+    kind: "STTOKE | VSL",
+    title: "A documentary, because that is what the buyer watches",
+    facts: ["1:07", "Documentary style", "AI archival footage", "9:16"],
+    results: [], proof: "", loom: "",
+    brief: "The brief was a VSL action item in EcomTalent.",
+    inspiration: "https://app.tryatria.com/ad/m1613144186750255",
+    notes: [
+      { heading: "The avatar", text: [
+        "STTOKE sells a premium coffee cup, so I built the ad for one specific avatar: a career-driven woman with the disposable income to pay more for something well made. Every editing decision came back to her."
+      ] },
+      { heading: "Why a documentary", text: [
+        "Editing for the avatar meant researching what this person actually watches, not what I wanted to make. Documentaries kept coming up, so I built the ad on documentary principles: an investigative tone, a story that uncovers something, and footage that feels high-end. That suited the brand too. A premium product has to look and feel premium, and the documentary format gives that sense of quality."
+      ] },
+      { heading: "AI-generated archival footage", text: [
+        "Archival footage is a big part of why documentaries feel cinematic and credible. I know this because I studied filmmakers before editing this ad, such as Asif Kapadia, who makes films entirely from archival footage.",
+        "The brand didn't have any, so I generated it with AI. I then combined it with natural, iPhone-style AI footage and the product footage STTOKE supplied. The archival shots carry the investigation and give it weight. The natural footage keeps it grounded and relatable, so the ad never drifts too far from the viewer's own life."
+      ] },
+      { heading: "Pacing", text: [
+        "The opening is fast, to hold attention and create curiosity while the problem is set up. Once the product appears, the pace slows. That gives the viewer time to understand the mechanism, which makes the product feel like the answer to their problem."
+      ] },
+      { heading: "Colour", text: [
+        "I graded the archival sections darker and cooler. That's how investigative documentaries look, and it fits the subject: the microplastics in the cups we drink from every day and what they could mean for our health. The cool palette makes that feel serious and uneasy."
+      ] },
+      { heading: "Sound design", text: [
+        "I spent more time on sound effects than usual. In a documentary-style edit, sound is an invisible layer that contributes a lot to a premium ad. Every sound effect was motivated by the visuals."
+      ] }
+    ]
+  },
+  {
+    id: "warroad",
+    kind: "Warroad, TILO Base Layer | VSL",
+    title: "Built from real hockey footage, so it belongs in a player's feed",
+    facts: ["2:43", "About 80 shots", "Real hockey footage and AI", "9:16"],
+    results: [], proof: "", loom: "",
+    brief: "The brief was a VSL action item in EcomTalent.",
+    notes: [
+      { heading: "Before the edit", text: [
+        "I looked at Warroad's positioning and market map. They lead with safety and comfort, quality and heritage. That guided my editing decisions, because it reminded me who the ICP is."
+      ] },
+      { heading: "The avatar", text: [
+        "TILO is for hockey players. Their brand ambassador is TJ Oshie. They're active, they live in hockey, and their feeds are full of hockey content. For the ad to land, it had to look like it belonged in that feed.",
+        "So I built it mostly from real hockey footage, like NHL clips, locker room social media videos and on-ice moments, so a player recognises straight away that the product is for them. Warroad is a premium brand with roots in hockey heritage. I let a little of that show without making it the focus."
+      ] },
+      { heading: "Pacing", text: [
+        "Hockey is fast, physical and dangerous, and I wanted the edit to feel the same. The cuts are quick, with constant changes of shot, whip transitions and sound effects that match the speed of the game.",
+        "But pace can't come at the cost of clarity. Whenever a key point lands, like the cut rating scale or the study, I slowed the pace down so the viewer digests the core message before the pacing speeds up again."
+      ] },
+      { heading: "AI-generated footage", text: [
+        "Much of the footage I needed didn't exist or wasn't in my control. I generated what was missing with AI and blended it with the real clips."
+      ] }
+    ]
+  },
+  {
+    id: "dfc-stop",
+    kind: "Dog Friendly Co | UGC ad",
+    title: "Three hooks on one body, so the test is clean",
+    facts: ["0:32", "21 shots", "3 hook variants", "9:16"],
+    results: [], proof: "", loom: "",
+    why: [
+      "The ad opens inside a pet store aisle with her hand already moving and the hook text readable on the first frame. Nothing fades in. Someone who owns a dog that pulls knows this is for them before she finishes the sentence.",
+      "After that, every cut lands on the word it shows. She says “pull” and you see the dog pulling. She says “front clip” and you see the clip. With the sound off, the pictures and captions still tell the whole story.",
+      "The pace is not constant. It quickens through the list of what comes in the bundle, then slows for the first walk, which is the moment the viewer needs to believe. All three hooks sit on an identical body, so a test measures the first three seconds and nothing else."
+    ]
+  },
+  {
+    id: "scrub-daddy",
+    kind: "Scrub Daddy | AI claymation",
+    title: "Six scripted scenes became fourteen shots",
+    facts: ["0:31", "14 shots", "2.2s average shot", "Stills, animation and voice generated with AI"],
+    results: [], proof: "", loom: "",
+    why: [
+      "The script had six scenes. Held at full length they would have dragged, so I built close-up cutaways from each one and cut on the voiceover. Nothing stays on screen longer than 3.3 seconds.",
+      "The product claim, firm in cold water and soft in warm, was written as a split screen. One frame holding both halves read slower than everything around it, so it became two single-subject shots, one after the other. Same information, half the effort to take in.",
+      "Character consistency is where AI animation usually falls apart. The hero shot was generated first and used as the reference for every other still, and two takes were thrown out because the face drifted. Captions sit under the faces, two to four words at a time, and the five sound effects are each tied to something that happens on screen."
+    ]
+  },
+  {
+    id: "laifen-ugc",
+    kind: "Laifen | UGC ad",
+    title: "An opinion in the hook, and proof for every claim after it",
+    facts: ["0:43", "20 shots", "2.1s average shot", "9:16"],
+    results: [], proof: "", loom: "",
+    why: [
+      "It opens on “Unpopular opinion” and the claim that cheap hair dryers will fry your hair, with the key phrase boxed so it reads in a glance. A statement that challenges what the viewer already does is a reason to keep watching.",
+      "Her own frizzy hair is on screen before the product is. The dryer does not appear until the problem has been seen, which makes it arrive as the answer.",
+      "Each feature is paired with a shot that shows it: the ion ring lit up, the dryer held overhead in one hand when she says it is light. For the numbers the edit switches to a dark product card and brings in units sold, the money-back window and the warranty as she says them, with her kept in the corner so the voice still has a face."
+    ]
+  }
+];
+
+const FORMATS = [
+  { icon: "user-focus",    title: "UGC ads",          text: "Creator footage cut to the brief, with native captions, b-roll matched to the words and a clean call to action." },
+  { icon: "sparkle",       title: "AI animation",     text: "Claymation, 3D and stylised ads built from generated stills, animated shot by shot, with voice and sound." },
+  { icon: "film-strip",    title: "VSLs and voiceover", text: "One to three minute scripts paced so there is always a new reason to keep watching." },
+  { icon: "arrows-split",  title: "Hook variants",    text: "Several openings on one body edit, so you can test the first three seconds and read the result." }
+];
+
+/* ===================================================================== */
+
+const $ = (s, r = document) => r.querySelector(s);
+const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Profile
+document.querySelectorAll("[data-name]").forEach(n => n.textContent = PROFILE.name);
+document.querySelectorAll("[data-role]").forEach(n => n.textContent = PROFILE.role);
+$("[data-intro]").textContent = PROFILE.intro;
+$("[data-tray-note]").textContent = PROFILE.name + ", " + PROFILE.role.toLowerCase();
+$("#year").textContent = new Date().getFullYear();
+document.title = PROFILE.name + " | " + PROFILE.role;
+
+document.querySelectorAll("[data-photo]").forEach(n => n.src = PROFILE.photo);
+$("[data-portrait]").src = PROFILE.portrait;
+$("[data-about]").textContent = PROFILE.about;
+$("#about-stats").innerHTML = PROFILE.stats.map(s => `<div><strong>${esc(s.value)}</strong><span>${esc(s.label)}</span></div>`).join("");
+
+$("#hero-contacts").innerHTML = PROFILE.contacts.map(c => c.href
+  ? `<a class="pill" href="${esc(c.href)}" target="_blank" rel="noopener"><i class="ph-light ph-${c.icon}"></i>${esc(c.value)}</a>`
+  : `<button class="pill" data-copy="${esc(c.value)}" aria-label="Copy ${esc(c.label)} username"><i class="ph-light ph-${c.icon}"></i>${esc(c.value)}</button>`).join("");
+
+$("#channels").innerHTML = PROFILE.contacts.map(c => `
+  <div class="channel">
+    <i class="ph-light ph-${c.icon}"></i>
+    ${c.href
+      ? `<a class="ch" href="${esc(c.href)}" target="_blank" rel="noopener"><span>${esc(c.label)}</span><span>${esc(c.value)}</span></a>`
+      : `<div class="ch"><span>${esc(c.label)}</span><span>${esc(c.value)}</span></div>`}
+    <button class="copy" data-copy="${esc(c.value)}" aria-label="Copy ${esc(c.label)}"><i class="ph-light ph-copy"></i></button>
+  </div>`).join("");
+
+const brandNames = [...new Set(Object.values(VIDEOS).filter(v => !v.personal).map(v => v.brand.replace(" Chew+", "")))].filter(b => b !== "Built Different");
+$("#brands").innerHTML = `<span>Brands in this portfolio</span>` + brandNames.map(b => `<b>${esc(b)}</b>`).join("");
+
+// Hero reel
+$("#reel").innerHTML = HERO_REEL.map((h, i) => `
+  <figure class="frame" style="--i:${i}">
+    ${reduced
+      ? `<img src="posters/${h.id}.jpg" alt="">`
+      : `<video src="loops/${h.id}.mp4" poster="posters/${h.id}.jpg" muted loop playsinline autoplay preload="metadata" aria-hidden="true"></video>`}
+    <figcaption>${esc(h.label)}</figcaption>
+  </figure>`).join("");
+
+// Work
+const thumb = id => `
+  <div class="thumb">
+    <img src="posters/${id}.jpg" alt="" loading="lazy" decoding="async">
+    <span class="play"><i class="ph-light ph-play"></i></span>
+    <span class="time">${VIDEOS[id].time}</span>
+  </div>`;
+
+$("#groups").innerHTML = GROUPS.map(g => `
+  <div class="group">
+    <div class="group-head reveal"><h3>${esc(g.title)}</h3><p>${esc(g.note)}</p></div>
+    <div class="cards">
+      ${g.ids.map((id, i) => `
+        <button class="card glass reveal" style="--d:${i}" data-play="${id}" aria-label="Play ${esc(VIDEOS[id].brand)}, ${esc(VIDEOS[id].format)}">
+          ${thumb(id)}
+          <div class="card-text"><h4>${esc(VIDEOS[id].brand)}</h4><p>${esc(VIDEOS[id].format)}</p></div>
+        </button>`).join("")}
+    </div>
+  </div>`).join("");
+
+// Case studies
+$("#cases").innerHTML = CASES.map(c => `
+  <article class="case glass reveal">
+    <button class="case-media" data-play="${c.id}" aria-label="Play ${esc(c.kind)}">${thumb(c.id)}</button>
+    <div class="case-body">
+      <p class="case-kind">${esc(c.kind)}</p>
+      <h3>${esc(c.title)}</h3>
+      <div class="facts">${c.facts.map(f => `<span>${esc(f)}</span>`).join("")}</div>
+      ${c.results && c.results.length ? `<div class="results">${c.results.map(r => `<div><strong>${esc(r.value)}</strong><span>${esc(r.label)}</span></div>`).join("")}</div>` : ""}
+      ${c.proof ? `<img class="proof" src="${esc(c.proof)}" alt="Dashboard screenshot for this ad" loading="lazy">` : ""}
+      ${c.notes ? `
+        <h4>Editor's breakdown</h4>
+        ${c.brief ? `<p class="brief">${esc(c.brief)}${c.inspiration ? ` The concept was inspired by <a href="${esc(c.inspiration)}" target="_blank" rel="noopener">this ad</a>.` : ""}</p>` : ""}
+        <div class="notes">${c.notes.map(n => `<div><h5>${esc(n.heading)}</h5>${n.text.map(p => `<p>${esc(p)}</p>`).join("")}</div>`).join("")}</div>` : `
+        <h4>Why it works</h4>
+        <div class="why">${c.why.map(p => `<p>${esc(p)}</p>`).join("")}</div>`}
+      <div class="case-links">
+        <button class="btn btn-sm" data-play="${c.id}"><i class="ph-light ph-play"></i>Watch the ad</button>
+        ${c.loom ? `<a class="btn btn-sm" href="${esc(c.loom)}" target="_blank" rel="noopener"><i class="ph-light ph-video-camera"></i>Watch the breakdown</a>` : ""}
+      </div>
+    </div>
+  </article>`).join("");
+
+$("#format-list").innerHTML = FORMATS.map((f, i) => `
+  <div class="format glass reveal" style="--d:${i}">
+    <i class="ph-light ph-${f.icon}"></i>
+    <h3>${esc(f.title)}</h3>
+    <p>${esc(f.text)}</p>
+  </div>`).join("");
+
+// Scroll reveal: opacity and blur
+if ("IntersectionObserver" in window && !reduced) {
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+  }), { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+  document.querySelectorAll(".reveal").forEach(n => io.observe(n));
+} else {
+  document.querySelectorAll(".reveal").forEach(n => n.classList.add("in"));
+}
+
+// Hero clips only play while they are on screen
+if (!reduced && "IntersectionObserver" in window) {
+  const vio = new IntersectionObserver(entries => entries.forEach(e => {
+    e.isIntersecting ? e.target.play().catch(() => {}) : e.target.pause();
+  }), { threshold: 0.2 });
+  document.querySelectorAll("#reel video").forEach(v => vio.observe(v));
+}
+
+// Nav state and playhead
+const nav = $("#nav"), head = $("#playhead");
+const onScroll = () => {
+  const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
+  nav.classList.toggle("scrolled", y > 12);
+  head.style.transform = `scaleX(${max > 0 ? Math.min(1, y / max) : 0})`;
+};
+addEventListener("scroll", onScroll, { passive: true });
+addEventListener("resize", onScroll);
+onScroll();
+
+// Tray
+const burger = $("#burger"), tray = $("#tray"), scrim = $("#scrim");
+const setMenu = open => {
+  document.body.classList.toggle("menu-open", open);
+  document.body.classList.toggle("locked", open);
+  burger.setAttribute("aria-expanded", open);
+  burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  tray.inert = !open;
+  if (open) tray.querySelector("a").focus({ preventScroll: true });
+};
+burger.addEventListener("click", () => setMenu(!document.body.classList.contains("menu-open")));
+scrim.addEventListener("click", () => setMenu(false));
+tray.addEventListener("click", e => { if (e.target.closest("a")) setMenu(false); });
+addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("menu-open")) { setMenu(false); burger.focus(); } });
+matchMedia("(min-width:1025px)").addEventListener("change", e => { if (e.matches) setMenu(false); });
+
+// Player
+const dlg = $("#player"), pv = $("#player-video");
+const openPlayer = id => {
+  const v = VIDEOS[id];
+  pv.poster = `posters/${id}.jpg`;
+  pv.src = `videos/${id}.mp4`;
+  $("#player-title").textContent = v.brand;
+  $("#player-sub").textContent = v.format + ", " + v.time;
+  dlg.showModal();
+  pv.play().catch(() => {});
+};
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-play]");
+  if (t) openPlayer(t.dataset.play);
+});
+$("#player-close").addEventListener("click", () => dlg.close());
+dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+dlg.addEventListener("close", () => { pv.pause(); pv.removeAttribute("src"); pv.load(); });
+
+// Copy a contact detail
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-copy]");
+  if (!b) return;
+  try { await navigator.clipboard.writeText(b.dataset.copy); } catch { return; }
+  const i = b.querySelector("i");
+  if (b.classList.contains("done")) return;
+  const was = i.className;
+  b.classList.add("done"); i.className = "ph-light ph-check";
+  setTimeout(() => { b.classList.remove("done"); i.className = was; }, 1600);
+});
+</script>
+</body>
+</html>
